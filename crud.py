@@ -1,9 +1,8 @@
-from .models import User
-from .engine import SessionLocal
+from models import User
+from engine import SessionLocal as db
 
 
-# Create a new user
-def create_user(db, user):
+def create_user(user):
     db_user = User(username=user.username, password=user.password, personal_data=user.personal_data)
     db.add(db_user)
     db.commit()
@@ -11,13 +10,11 @@ def create_user(db, user):
     return db_user
 
 
-# Get a user by username
-def get_user(db, username):
+def get_user(username):
     return db.query(User).filter(User.username == username).first()
 
 
-# Update personal data for a user
-def update_user_data(db, username, new_data):
+def update_user_data(username, new_data):
     db_user = db.query(User).filter(User.username == username).first()
     db_user.personal_data = new_data
     db.commit()

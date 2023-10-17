@@ -1,9 +1,13 @@
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from sqlalchemy.ext.declarative import declarative_base
+
 
 load_dotenv()  # Load environment variables from .env file
+Base = declarative_base()
 
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
@@ -18,3 +22,11 @@ engine = create_engine(DATABASE_URL)
 
 # Create a SessionLocal class to manage the database session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_db_engine():
+    return engine
+
+
+def get_session():
+    return SessionLocal()
