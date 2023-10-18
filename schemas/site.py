@@ -15,12 +15,12 @@ class SiteCreate(BaseModel):
 
 
 class SiteInDB(BaseModel):
-    site_url: str
+    url: str
     user_id: int
+    # user: User
     follow_counter: Optional[int]
     data_uploaded: Optional[int]
     data_downloaded: Optional[int]
-    user: User
 
     class Config:
         from_attributes = True
@@ -28,7 +28,6 @@ class SiteInDB(BaseModel):
 
 
 class SiteInResponse(BaseModel):
-    id: int
     url: str
     user_id: int
     follow_counter: int

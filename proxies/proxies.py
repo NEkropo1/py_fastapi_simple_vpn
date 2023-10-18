@@ -50,7 +50,7 @@ async def get_site_content_with_random_proxy(original_site_url: str) -> str:
                     if site:
                         site.follow_counter += 1
                         site.data_uploaded += len(response.content)
-                        site.data_downloaded += len(response.text)
+                        site.data_downloaded += len(response.content)
             return response.text
         except httpx.HTTPError as http_err:
             print(f"HTTP error occurred: {http_err}")
@@ -67,7 +67,7 @@ def create_endpoint(modified_link: str):
                                                          modified_link)
         return refactored_content
 
-    @main.router.get(f"/{modified_link}/", response_model=None)
+    @main.app.get(f"/{modified_link}/", response_model=None)
     async def dynamic_route():
         return await handler()
 
@@ -79,7 +79,7 @@ async def refactor_site_content(site_content: str, user_site_name: str) -> str:
     for link in soup.find_all("a", href=True):
         parsed_url = urlparse(link["href"])
         if user_site_name in parsed_url.netloc:
-            modified_link = link["href"].replace(user_site_name, f"localhost.{user_site_name}")
+            modified_link = link["href"].replace(user_site_name, f"localhost/{user_site_name}")
             link["href"] = modified_link
             if modified_link not in created_endpoints:
                 create_endpoint(modified_link)

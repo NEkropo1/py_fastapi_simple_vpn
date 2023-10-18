@@ -42,7 +42,7 @@ def get_user_from_token(token: str) -> dict:
         raise HTTPException(status_code=404, detail=f"Not found, details: \n{e}")
 
 
-def get_current_user(username: str, token: str) -> User:
+def get_current_user(token: str) -> User:
     payload = get_user_from_token(token)
     if payload and payload.get("sub") == username:
         return get_user(username)
@@ -76,7 +76,7 @@ def save_site_to_db(site: Site) -> None:
 
 
 def create_site(db: Session, site_url: str, current_user: User) -> Site:
-    new_site = Site(site_url=site_url, user_id=current_user.id)
+    new_site = Site(url=site_url, user_id=current_user.id)
     try:
         db.add(new_site)
         db.commit()
