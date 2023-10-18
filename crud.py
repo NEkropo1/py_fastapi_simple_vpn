@@ -6,7 +6,6 @@ from auth import SECRET_KEY, ALGORITHM
 from middleware.encdec import hash_password
 from models import User, Site
 from engine import get_session
-from proxies.proxies import select_random_proxy
 
 
 def create_user(user) -> User:
@@ -76,8 +75,8 @@ def save_site_to_db(site: Site) -> None:
             raise e
 
 
-def create_site(db: Session, site: Site, current_user: User) -> Site:
-    new_site = Site(url=site.url, user_id=current_user.id)
+def create_site(db: Session, site_url: str, current_user: User) -> Site:
+    new_site = Site(site_url=site_url, user_id=current_user.id)
     try:
         db.add(new_site)
         db.commit()

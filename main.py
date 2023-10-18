@@ -11,6 +11,7 @@ from engine import get_session
 from models import User, Site
 from proxies.proxies import get_site_content_with_random_proxy, refactor_site_content
 from schemas.user import UserCreate
+from schemas.site import SiteInDB, SiteInResponse
 
 app = FastAPI()
 router = APIRouter()
@@ -71,14 +72,24 @@ async def get_statistics(token: str, username: str) -> dict:
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
-@router.post("/create_site", response_model=Site)
-async def create_site(site: Site, current_user: User = Depends(crud.get_current_user), db: Session = Depends(get_session)):
-    db_site = crud.create_site(db, site, current_user)
-    route_link = f"{site.url}/"
-    return {"route_link": route_link, "site": db_site}
+@router.post("/create_site", response_model=SiteInResponse)
+async def create_site(
+        site: Site,
+        current_user: User = Depends(crud.get_current_user),
+        db: Session = Depends(get_session)
+):
+    db_site, route_link = crud.create_site(db, site.url, current_user)
+    return SiteInDB(
+        site_url=db_site.url,
+        user_id=db_site.user_id,
+        follow_counter=db_site.follow_counter,
+        data_uploaded=db_site.data_uploaded,
+        data_downloaded=db_site.data_downloaded,
+        user=db_site.user
+    )
 
 
-@router.get("/site_content/")
+@router.get("/site_content/", response_model=SiteInResponse)
 async def get_site_content(
         token: str,
         user_site_name: str,
