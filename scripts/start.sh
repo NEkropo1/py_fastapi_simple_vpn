@@ -9,9 +9,8 @@ wait_for_db() {
 }
 
 wait_for_db
-# Run database migrations
+
 alembic revision --autogenerate -m "First migration"
 alembic upgrade head
 
-# Start the FastAPI application
 uvicorn main:app --host 0.0.0.0 --port 8000

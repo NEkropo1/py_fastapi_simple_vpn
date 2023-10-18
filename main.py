@@ -1,11 +1,19 @@
+from urllib.request import Request
+
 from fastapi import FastAPI, HTTPException
 
 from crud import create_user, get_user, update_user_data
 from auth import create_access_token, verify_token
-from models import User
+from models import User, Site
 from schemas.user import UserCreate
 
 app = FastAPI()
+
+
+@app.middleware("http")
+async def count_requests(request: Request, call_next):
+    response = await call_next(request)
+    return response
 
 
 @app.post("/register/")
