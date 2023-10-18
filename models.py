@@ -1,5 +1,9 @@
-from sqlalchemy import Column, Integer, String, UniqueConstraint, CheckConstraint
-from engine import Base
+from sqlalchemy import Column, Integer, String, UniqueConstraint, CheckConstraint, LargeBinary
+from sqlalchemy.ext.declarative import declarative_base
+
+from middleware.encdec import hash_password, verify_password
+
+Base = declarative_base()
 
 
 class User(Base):
@@ -7,12 +11,14 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True)
-    password = Column(String, nullable=False)
+    password = Column(LargeBinary, nullable=False)
     personal_data = Column(String, nullable=True)
     __table_args__ = (
         UniqueConstraint("username", name="unique_username"),
-        CheckConstraint(
-            "CHAR_LENGTH(password) >= 5 and CHAR_LENGTH(password) <= 12",
-            name="password_length_check"
-        ),
     )
+
+    def set_password(self, password):
+        self.password = hash_password(password)
+
+    def check_password(self, password):
+        return verify_password(self.password, password)

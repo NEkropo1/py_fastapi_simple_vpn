@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 
 from crud import create_user, get_user, update_user_data
 from auth import create_access_token, verify_token
+from models import User
 from schemas.user import UserCreate
 
 app = FastAPI()
@@ -21,7 +22,7 @@ def register_user(user: UserCreate):
 @app.post("/login/")
 def login_user(username: str, password: str):
     user = get_user(username)
-    if user and user.password == password:
+    if user and user.check_password(password):
         token = create_access_token({"sub": user.username})
         return {"message": "Login successful", "token": token}
     raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -37,8 +38,12 @@ def edit_user_data(username: str, new_data: str, token: str):
 
 
 @app.get("/statistics/")
-def get_statistics(token: str):
+def get_statistics(token: str, username: str):
     payload = verify_token(token)
-    if payload:
-        return {"message": "Statistics endpoint"}
+    if payload and payload.get("sub") == username:
+        user = get_user(username)
+        if user:
+            return {"message": f"{user.personal_data}"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
     raise HTTPException(status_code=401, detail="Unauthorized")

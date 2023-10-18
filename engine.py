@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.declarative import declarative_base
 
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv()
 Base = declarative_base()
 
 POSTGRES_USER = os.getenv("POSTGRES_USER")
@@ -15,12 +15,12 @@ POSTGRES_DB = os.getenv("POSTGRES_DB")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+DATABASE_URL = f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-# Create the database engine
+
 engine = create_engine(DATABASE_URL)
 
-# Create a SessionLocal class to manage the database session
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
