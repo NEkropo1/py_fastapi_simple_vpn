@@ -34,3 +34,5 @@ class Site(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="sites")
     follow_counter = Column(Integer, default=0)
+    data_uploaded = Column(Integer, default=0)
+    data_downloaded = Column(Integer, default=0)
