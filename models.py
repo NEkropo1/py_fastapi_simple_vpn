@@ -31,17 +31,6 @@ class Site(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     url = Column(String, unique=True)
-    name = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="sites")
-    site_derivatives = relationship("SiteDerivative", back_populates="site")
-
-
-class SiteDerivative(Base):
-    __tablename__ = "site_derivatives"
-
-    id = Column(Integer, primary_key=True, index=True)
-    link = Column(String, unique=True)
-    count = Column(Integer)
-    site_id = Column(Integer, ForeignKey("sites.id"))
-    site = relationship("Site", back_populates="site_derivatives")
+    follow_counter = Column(Integer, default=0)
