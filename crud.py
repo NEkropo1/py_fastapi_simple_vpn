@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from jose import jwt
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from auth import SECRET_KEY, ALGORITHM
@@ -13,7 +14,7 @@ def create_user(user) -> User:
     db_user = User(
         username=user.username,
         password=hashed_password,
-        personal_data=user.personal_data
+        personal_data=user.personal_data if user.personal_data else None
     )
     with get_session() as session:
         try:
@@ -44,8 +45,9 @@ def get_user_from_token(token: str) -> dict:
 
 def get_current_user(token: str) -> User:
     payload = get_user_from_token(token)
-    if payload and payload.get("sub") == username:
-        return get_user(username)
+    user = get_user(payload.get("sub"))
+    if user:
+        return user
     else:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -76,12 +78,19 @@ def save_site_to_db(site: Site) -> None:
 
 
 def create_site(db: Session, site_url: str, current_user: User) -> Site:
+    existing_site = db.query(Site).filter_by(url=site_url).first()
+
+    if existing_site:
+        return existing_site
+
     new_site = Site(url=site_url, user_id=current_user.id)
     try:
         db.add(new_site)
         db.commit()
         db.refresh(new_site)
-    except Exception as e:
+
+    except IntegrityError as e:
         db.rollback()
         raise e
     return new_site
+

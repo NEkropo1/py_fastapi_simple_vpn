@@ -4,18 +4,18 @@ from fastapi import FastAPI, HTTPException, APIRouter, Depends
 from sqlalchemy.orm import Session
 
 import crud
-import models
+import middleware.data_uploaded
 
 from auth import create_access_token, verify_token
 from engine import get_session
-from models import User
-from proxies.proxies import get_site_content_with_random_proxy, refactor_site_content
-from schemas.user import UserCreate
+from models import User, Site
+from proxies.proxies import get_site_content_with_random_proxy, refactor_site_content, create_endpoint
+from schemas.user import UserCreate, UserLogin
 from schemas.site import SiteInDB, SiteInResponse, SiteCreate
+from utilities.helper_functions import get_user_by_username, get_site_data
 
 app = FastAPI()
 router = APIRouter()
-
 
 
 @app.middleware("http")
@@ -36,7 +36,9 @@ def register_user(user: UserCreate):
 
 
 @app.post("/login/")
-def login_user(username: str, password: str):
+def login_user(user_data: UserLogin):
+    username = user_data.username
+    password = user_data.password
     user = crud.get_user(username)
     if user and user.check_password(password):
         token = create_access_token({"sub": user.username})
@@ -58,18 +60,8 @@ async def get_statistics(token: str, username: str) -> dict:
     payload = verify_token(token)
     if payload and payload.get("sub") == username:
         with get_session() as session:
-            user = session.query(models.User).filter(models.User.username == username).first()
-            if user:
-                sites_data = {
-                    site.url: {
-                        "follow_counter": site.follow_counter,
-                        "data_uploaded": site.data_uploaded,
-                        "data_downloaded": site.data_downloaded
-                    } for site in user.sites
-                }
-                return sites_data if sites_data else {"message": "No sites created yet."}
-            else:
-                raise HTTPException(status_code=404, detail="User not found")
+            user = get_user_by_username(session, username)
+            return get_site_data(user)
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 
@@ -80,6 +72,7 @@ async def create_site(
         db: Session = Depends(get_session)
 ):
     db_site = crud.create_site(db, site.url, current_user)
+    create_endpoint(db_site.url)
     return db_site
 
 
@@ -98,3 +91,6 @@ async def get_site_content(
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 app.include_router(router)
+# TODO: Refactor middleware, it's currently not working
+# middleware = middleware.data_uploaded.RequestSizeMiddleware(app, get_session(), Site)
+# app.add_middleware(middleware.__class__)

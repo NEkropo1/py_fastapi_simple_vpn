@@ -1,10 +1,8 @@
 from sqlalchemy import Column, Integer, String, UniqueConstraint, LargeBinary, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from middleware.encdec import hash_password, verify_password
-
-Base = declarative_base()
+from engine import Base
 
 
 class User(Base):
