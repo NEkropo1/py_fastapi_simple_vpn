@@ -34,7 +34,7 @@ docker-compose up
 ### Running the Application
 
 Once the Docker container is running, you can access the FastAPI application  
-at http://localhost:8000.
+at http://0.0.0.0:8000.
 
 
 ### Endpoints
